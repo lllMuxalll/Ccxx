@@ -1,0 +1,60 @@
+import discord
+from discord.ext import commands
+
+# 1. Настройка прав доступа (Intents)
+intents = discord.Intents.default()
+intents.message_content = True  # Чтобы бот видел сообщения
+intents.messages = True
+intents.reactions = True        # Чтобы бот видел нажатия на реакции
+intents.members = True          # Чтобы правильно определять пользователей
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# Константы
+TARGET_CHANNEL_ID = 1291775377957453909  # ID вашего канала
+REACTION_EMOJI = "✋"                    # Эмодзи для отклика
+
+@bot.event
+async def on_ready():
+    print(f'Бот {bot.user.name} запущен и готов к работе в канале {TARGET_CHANNEL_ID}!')
+
+@bot.event
+async def on_message(message):
+    # Игнорируем сообщения от самого бота
+    if message.author == bot.user:
+        return
+
+    # Проверяем, что сообщение написано в нужном канале
+    if message.channel.id == TARGET_CHANNEL_ID:
+        # Бот просто ставит реакцию под ЛЮБОЕ сообщение в этом канале
+        await message.add_reaction(REACTION_EMOJI)
+
+@bot.event
+async def on_raw_reaction_add(payload):
+    # Проверяем, что реакцию поставил не бот
+    if payload.user_id == bot.user.id:
+        return
+
+    # Проверяем, что реакция поставлена в нужном канале и это нужный эмодзи
+    if payload.channel_id == TARGET_CHANNEL_ID and str(payload.emoji) == REACTION_EMOJI:
+        channel = bot.get_channel(payload.channel_id)
+        
+        try:
+            # Получаем объект сообщения, на которое нажали
+            message = await channel.fetch_message(payload.message_id)
+            
+            author = message.author    # Тот, кто написал сообщение (ищет тиммейта)
+            responder = payload.member # Тот, кто нажал на реакцию (откликнулся)
+
+            # Если человек нажал на свою же реакцию — игнорируем (по желанию)
+            if author.id == responder.id:
+                return
+
+            # Отправляем уведомление
+            await channel.send(f"{author.mention}, пользователь {responder.mention} хочет с вами поиграть!")
+            
+        except Exception as e:
+            print(f"Ошибка при обработке реакции: {e}")
+
+# Вставьте сюда токен вашего бота
+bot.run('ВАШ_ТОКЕН_ЗДЕСЬ')
