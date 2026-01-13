@@ -57,4 +57,4 @@ async def on_raw_reaction_add(payload):
             print(f"Ошибка при обработке реакции: {e}")
 
 # Вставьте сюда токен вашего бота
-bot.run('ВАШ_ТОКЕН_ЗДЕСЬ')
+bot.run('MTIxMzg4MzA0NDI4MTMyMzYyMQ.G1tC7l.yK3-zVuVkLvpZIUGJnEyVNAouxsevEsxHL5s4A')
